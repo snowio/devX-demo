@@ -7,6 +7,7 @@ use function GuzzleHttp\Promise\coroutine;
 use GuzzleHttp\Psr7\Response;
 use function ObjectStream\readable;
 use PHPUnit\Framework\TestCase;
+use SnowIO\Demo\AsyncProgramming\BookDetailService;
 
 class AsyncTest extends TestCase
 {
@@ -20,22 +21,7 @@ class AsyncTest extends TestCase
      */
     public function externalApiWithPromise(array $bookIds)
     {
-        $playerGetPromises = array_map(function ($bookId) {
-            return $this->client->getAsync($bookId);
-        }, $bookIds);
-        $results = [];
-        $allResolvedPromise = all($playerGetPromises)
-            ->then(function ($responses) use (&$results) {
-                $results = array_map(function (Response $response) {
-                    return $this->toJson($response);
-                }, $responses);
-            })
-            ->otherwise(function (\Throwable $e) {
-                echo $e->getMessage();
-                self::fail('Boom!');
-            })
-        ;
-        $allResolvedPromise->wait();
+        $results = BookDetailService::getBooksWithPromises($bookIds)->wait();
         file_put_contents(__DIR__ . '/output-promises.json', json_encode($results));
         self::assertNotEmpty($results);
     }
@@ -47,20 +33,9 @@ class AsyncTest extends TestCase
      */
     public function externalApiWithCoroutine(array $bookIds)
     {
-        coroutine(function () use ($bookIds) {
-            try {
-                $results = [];
-                foreach ($bookIds as $bookId) {
-                    $response = yield $this->client->getAsync($bookId);
-                    $results[] = $this->toJson($response);
-                }
-                file_put_contents(__DIR__ . '/output-coroutine.json', json_encode($results));
-                self::assertNotEmpty($results);
-            } catch (\Throwable $error) {
-                echo $error->getMessage();
-                self::fail('Boom!');
-            }
-        })->wait();
+        $results = BookDetailService::getBooksWithCoroutine($bookIds)->wait();
+        file_put_contents(__DIR__ . '/output-coroutine.json', json_encode($results));
+        self::assertNotEmpty($results);
     }
 
     /** @test */
