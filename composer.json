@@ -14,7 +14,7 @@
         "joshdifabio/object-stream": "^0.4.31"
     },
     "repositories": [
-        {"type": "composer", "url": "https://repo.packagist.com/snowio/"},
+        {"type": "composer", "url": "https://repo.packagist.com/idhl/snowio/"},
         {"packagist.org": false}
     ],
     "autoload": {
